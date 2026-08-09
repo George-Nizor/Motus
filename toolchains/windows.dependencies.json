@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "target": "windows-11-x86_64-mingw64",
+  "language": "C++20",
+  "generator": "Ninja",
+  "requestedCompatibility": {
+    "qt": "6",
+    "mlt": "7.40",
+    "ffmpeg": "8.1",
+    "sdl": "2"
+  },
+  "shotcutSdk": {
+    "status": "must-be-pinned-by-m0-feasibility-run",
+    "version": null,
+    "url": null,
+    "sha256": null
+  },
+  "policy": "CI and release builds must reject null or mismatched SDK lock values."
+}
+

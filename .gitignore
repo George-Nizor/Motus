@@ -1,0 +1,7 @@
+/build/
+/.cache/
+*.ve-cache/
+*.autosave.veproj
+*.recovery.veproj
+compile_commands.json
+

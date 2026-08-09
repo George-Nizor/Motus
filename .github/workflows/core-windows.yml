@@ -1,0 +1,28 @@
+name: core-windows
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  mingw64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+      - name: Configure core
+        shell: msys2 {0}
+        run: cmake -S . -B build/ci -G Ninja -DVE_BUILD_DESKTOP=OFF -DVE_BUILD_TESTS=ON -DVE_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build/ci
+      - name: Test
+        shell: msys2 {0}
+        run: ctest --test-dir build/ci --output-on-failure
