@@ -3,6 +3,8 @@
 #include "ve/project.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,14 +45,31 @@ private:
 [[nodiscard]] std::unique_ptr<ProjectCommand> makeSplitClipCommand(Id clipId,
                                                                    MediaTime timelinePosition);
 
+// Moves one clip and only its contemporaneous linked counterparts. The command is confined to
+// the sequence containing clipId and fails atomically if the move would overlap another clip.
+[[nodiscard]] std::unique_ptr<ProjectCommand> makeMoveClipCommand(Id clipId,
+                                                                  MediaTime timelinePosition);
+
+// Trims one edge of a clip and its contemporaneous linked counterparts. Positions are expressed
+// on the timeline and must fall strictly inside the selected clip.
+[[nodiscard]] std::unique_ptr<ProjectCommand> makeTrimClipStartCommand(Id clipId,
+                                                                       MediaTime timelinePosition);
+[[nodiscard]] std::unique_ptr<ProjectCommand> makeTrimClipEndCommand(Id clipId,
+                                                                     MediaTime timelinePosition);
+
 // Removes [start, end) from every unlocked track in a sequence and closes the gap.
 [[nodiscard]] std::unique_ptr<ProjectCommand> makeRippleDeleteCommand(Id sequenceId,
                                                                       MediaTime start,
                                                                       MediaTime end);
+
+// Repoints one asset without replacing its id or any timeline references. The source file is
+// sampled read-only on first execution; undo/redo then use the captured project snapshots.
+[[nodiscard]] std::unique_ptr<ProjectCommand> makeRelinkAssetCommand(
+    Id assetId, std::filesystem::path replacementPath,
+    std::uint64_t sampleBytesPerEnd = 512U * 1024U);
 
 // Replaces the project in one reversible transaction. Used for bulk operations.
 [[nodiscard]] std::unique_ptr<ProjectCommand> makeReplaceProjectCommand(std::string label,
                                                                         Project replacement);
 
 } // namespace ve
-

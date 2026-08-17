@@ -1,0 +1,5 @@
+#include <windows.h>
+
+// Explorer, pinned shortcuts, and the taskbar read the PE icon group. The SVG
+// bundled for QML/QWindow is not a substitute for this native resource.
+IDI_MOTUS_ICON ICON DISCARDABLE "assets/motus.ico"

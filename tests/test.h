@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace test {
@@ -27,9 +28,18 @@ inline ve::Project sampleProject() {
     project.id = "project";
     project.name = "Sample";
     project.profile = {3840, 2160, 30, 1, 48000, 2, "Rec.709 SDR"};
-    project.assets.push_back({"asset", "talking-head.mp4", "media/talking-head.mp4", "Talking Head",
-        {1000000, 123456789, "abc123"}, ve::AssetStatus::Online, ve::MediaTime::frames(300, 30),
-        true, true, true});
+    ve::Asset asset;
+    asset.id = "asset";
+    asset.path = "talking-head.mp4";
+    asset.relativePath = "media/talking-head.mp4";
+    asset.displayName = "Talking Head";
+    asset.fingerprint = {1000000, 123456789, "abc123"};
+    asset.status = ve::AssetStatus::Online;
+    asset.duration = ve::MediaTime::frames(300, 30);
+    asset.hasVideo = true;
+    asset.hasAudio = true;
+    asset.proxyEligible = true;
+    project.assets.push_back(std::move(asset));
     ve::Clip video{"video", "asset", "linked", ve::MediaTime::frames(0, 30),
         ve::MediaTime::frames(0, 30), ve::MediaTime::frames(300, 30),
         ve::MediaTime::frames(0, 30), ve::MediaTime::frames(0, 30), 1.0, {}};

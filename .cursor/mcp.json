@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "motus": {
+      "command": "${workspaceFolder}/build/windows-mingw-release/motus-mcp.exe",
+      "args": []
+    }
+  }
+}
+

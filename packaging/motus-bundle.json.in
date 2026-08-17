@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "motus",
+  "version": "@PROJECT_VERSION@",
+  "executable": "motus@CMAKE_EXECUTABLE_SUFFIX@",
+  "probeArgument": "--instrumenta-launch-check",
+  "mediaTools": ["ffprobe@CMAKE_EXECUTABLE_SUFFIX@", "ffmpeg@CMAKE_EXECUTABLE_SUFFIX@"],
+  "previewBackend": "Qt Multimedia clip preview",
+  "exportPreset": "simple-gapless-h264-aac-mp4"
+}

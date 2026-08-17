@@ -51,3 +51,26 @@ TEST("A manual-only suggestion can be applied by an explicit user action") {
     CHECK(cleaned.sequences.size() == 2);
     CHECK(cleaned.cleanupSuggestions[0].state == ve::SuggestionState::Accepted);
 }
+
+TEST("A cleaned sequence owns independent clip link effect and transition identifiers") {
+    auto project = test::sampleProject();
+    ve::UndoStack history;
+    history.apply(project, ve::makeSplitClipCommand("video", ve::MediaTime::frames(120, 30)));
+    auto& source = project.sequences[0];
+    source.tracks[0].clips[0].effects.push_back(
+        {"effect-original", "affine", true, {{"opacity", "1"}}, {}});
+    source.transitions.push_back({"transition-original", source.tracks[0].clips[0].id,
+                                  source.tracks[0].clips[1].id, "mix",
+                                  ve::MediaTime::frames(12, 30)});
+    project.validate();
+
+    const auto cleaned = ve::buildCleanedProject(project, "sequence", {});
+    const auto& copy = cleaned.sequences[1];
+    CHECK(copy.tracks[0].clips[0].id != source.tracks[0].clips[0].id);
+    CHECK(copy.tracks[0].clips[0].linkedGroupId != source.tracks[0].clips[0].linkedGroupId);
+    CHECK(copy.tracks[0].clips[0].linkedGroupId == copy.tracks[1].clips[0].linkedGroupId);
+    CHECK(copy.tracks[0].clips[0].effects[0].id != "effect-original");
+    CHECK(copy.transitions[0].id != "transition-original");
+    CHECK(copy.transitions[0].fromClipId == copy.tracks[0].clips[0].id);
+    CHECK(copy.transitions[0].toClipId == copy.tracks[0].clips[1].id);
+}

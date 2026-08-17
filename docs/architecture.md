@@ -7,6 +7,13 @@ the only copy of an edit. Every mutation runs through `ProjectCommand`; commands
 result and roll back on failure. Bulk cleanup constructs a replacement snapshot and therefore
 appears as one undo operation.
 
+Linked-group identity is sequence-local and identifies one contemporaneous A/V edit pair. A split
+creates one new shared linked-group identity for the right-side pair, and a duplicated cleaned
+sequence remaps clip, link, effect, transition, and marker identifiers so later edits cannot leak
+back into its source sequence. Ripple edits collapse markers inside the removed interval, shift
+later markers, remap outgoing transitions to surviving right fragments, and discard transitions
+whose endpoints no longer exist.
+
 The model uses half-open ranges (`[start, end)`). MLT uses inclusive clip out-points, so
 `buildMltGraph` performs the conversion in exactly one place (`out = in + duration - 1`). Preview
 graphs may substitute registered proxies. Render graphs ignore proxies by design.
@@ -46,17 +53,24 @@ model is replaced or licensed.
 
 ## Threading and jobs
 
-Probe, proxy, waveform, transcription, face analysis, and render work goes through
+Proxy, waveform, transcription, and face-analysis work goes through
 `JobScheduler`. Work receives a stop token and bounded progress callback. CPU concurrency is
 configurable; regardless of worker count, only one GPU job can run. The journal is diagnostic
 state, not project state. A future startup loader will classify unfinished journal records as
 interrupted and offer retry.
 
+Desktop FFprobe and FFmpeg export currently use cancellable `QProcess` workers because they need
+typed GUI-thread completion and native process diagnostics not yet exposed by `JobScheduler`.
+Probe metadata is durable project state. Exports snapshot the canonical project, validate the
+supported simple-timeline subset, render originals to a sibling partial file, and publish only on
+success.
+
 ## Dependency seams still to implement
 
 - MLT repository/consumer lifecycle and SDL2 audio/video output.
-- FFmpeg probe, extraction, waveform, silence, proxy, and export workers.
+- FFmpeg extraction, waveform, silence, and proxy workers; richer export presets.
 - Windows named-pipe JSON-RPC transport and Python provider host.
 - Qt model/view bindings and timeline interaction layer.
+- Drag-based timeline manipulation and a thumbnail/waveform-backed virtualized timeline (the current
+  controller provides exact-frame selection, move/trim/remove, markers, track toggles, snap, and zoom).
 - SQLite cache index and disk-space policy.
-

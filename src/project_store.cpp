@@ -149,6 +149,72 @@ Sequence readSequence(const json::Value& value) {
     return sequence;
 }
 
+json::Value mediaStreamValue(const MediaStreamInfo& stream) {
+    return Object{{"index", stream.index}, {"kind", enumValue(stream.kind)},
+        {"codec", stream.codec}, {"width", stream.width}, {"height", stream.height},
+        {"averageRateNumerator", stream.averageRateNumerator},
+        {"averageRateDenominator", stream.averageRateDenominator},
+        {"nominalRateNumerator", stream.nominalRateNumerator},
+        {"nominalRateDenominator", stream.nominalRateDenominator},
+        {"sampleRate", stream.sampleRate}, {"channels", stream.channels},
+        {"rotationDegrees", stream.rotationDegrees}, {"frameCount", stream.frameCount},
+        {"pixelFormat", stream.pixelFormat},
+        {"colorSpace", stream.colorSpace}, {"channelLayout", stream.channelLayout},
+        {"timeBase", stream.timeBase}, {"duration", timeValue(stream.duration)}};
+}
+
+MediaStreamInfo readMediaStream(const json::Value& value) {
+    MediaStreamInfo stream;
+    stream.index = static_cast<std::int32_t>(value.at("index").integer());
+    stream.kind = readEnum<MediaStreamKind>(value.at("kind"), 2);
+    stream.codec = value.at("codec").string();
+    stream.width = static_cast<std::int32_t>(value.at("width").integer());
+    stream.height = static_cast<std::int32_t>(value.at("height").integer());
+    stream.averageRateNumerator = static_cast<std::int32_t>(value.at("averageRateNumerator").integer());
+    stream.averageRateDenominator = static_cast<std::int32_t>(value.at("averageRateDenominator").integer());
+    stream.nominalRateNumerator = static_cast<std::int32_t>(value.at("nominalRateNumerator").integer());
+    stream.nominalRateDenominator = static_cast<std::int32_t>(value.at("nominalRateDenominator").integer());
+    stream.sampleRate = static_cast<std::int32_t>(value.at("sampleRate").integer());
+    stream.channels = static_cast<std::int32_t>(value.at("channels").integer());
+    stream.rotationDegrees = static_cast<std::int32_t>(value.at("rotationDegrees").integer());
+    if (const auto* item = value.find("frameCount")) stream.frameCount = item->integer();
+    stream.pixelFormat = value.at("pixelFormat").string();
+    stream.colorSpace = value.at("colorSpace").string();
+    if (const auto* item = value.find("channelLayout")) stream.channelLayout = item->string();
+    if (const auto* item = value.find("timeBase")) stream.timeBase = item->string();
+    if (const auto* item = value.find("duration")) stream.duration = readTime(*item);
+    return stream;
+}
+
+json::Value mediaProbeValue(const MediaProbeResult& probe) {
+    Array streams;
+    for (const auto& stream : probe.streams) streams.push_back(mediaStreamValue(stream));
+    Array warnings;
+    for (const auto& warning : probe.warnings) warnings.emplace_back(warning);
+    return Object{{"duration", timeValue(probe.duration)}, {"streams", std::move(streams)},
+        {"formatName", probe.formatName}, {"bitRate", probe.bitRate},
+        {"variableFrameRate", probe.variableFrameRate},
+        {"proxyRecommended", probe.proxyRecommended}, {"warnings", std::move(warnings)}};
+}
+
+MediaProbeResult readMediaProbe(const json::Value& value) {
+    MediaProbeResult probe;
+    probe.duration = readTime(value.at("duration"));
+    for (const auto& stream : value.at("streams").array()) {
+        probe.streams.push_back(readMediaStream(stream));
+    }
+    if (const auto* item = value.find("formatName")) probe.formatName = item->string();
+    if (const auto* item = value.find("bitRate")) probe.bitRate = item->integer();
+    probe.variableFrameRate = value.find("variableFrameRate") &&
+                              value.find("variableFrameRate")->boolean();
+    probe.proxyRecommended = value.find("proxyRecommended") &&
+                             value.find("proxyRecommended")->boolean();
+    if (const auto* warnings = value.find("warnings")) {
+        for (const auto& warning : warnings->array()) probe.warnings.push_back(warning.string());
+    }
+    return probe;
+}
+
 json::Value assetValue(const Asset& asset) {
     Object value{{"id", asset.id}, {"path", asset.path.generic_string()},
         {"displayName", asset.displayName}, {"status", enumValue(asset.status)},
@@ -159,6 +225,9 @@ json::Value assetValue(const Asset& asset) {
             {"headTailSha256", asset.fingerprint.headTailSha256}}}};
     value.emplace("relativePath", asset.relativePath ? json::Value(asset.relativePath->generic_string())
                                                      : json::Value(nullptr));
+    value.emplace("probe", asset.probe ? mediaProbeValue(*asset.probe) : json::Value(nullptr));
+    value.emplace("probedUtcMs", asset.probedUtcMs);
+    value.emplace("probeBackend", asset.probeBackend);
     return value;
 }
 
@@ -174,6 +243,12 @@ Asset readAsset(const json::Value& value) {
     asset.hasVideo = !value.find("hasVideo") || value.find("hasVideo")->boolean();
     asset.hasAudio = !value.find("hasAudio") || value.find("hasAudio")->boolean();
     asset.proxyEligible = value.find("proxyEligible") && value.find("proxyEligible")->boolean();
+    if (const auto* probe = value.find("probe"); probe &&
+        !std::holds_alternative<std::nullptr_t>(probe->data)) {
+        asset.probe = readMediaProbe(*probe);
+    }
+    if (const auto* item = value.find("probedUtcMs")) asset.probedUtcMs = item->integer();
+    if (const auto* item = value.find("probeBackend")) asset.probeBackend = item->string();
     const auto& fingerprint = value.at("fingerprint");
     asset.fingerprint = {static_cast<std::uint64_t>(fingerprint.at("byteSize").integer()),
         fingerprint.at("modifiedUtcMs").integer(), fingerprint.at("headTailSha256").string()};

@@ -102,18 +102,30 @@ void Project::validate() const {
     for (const auto& asset : assets) unique(asset.id, "asset");
     for (const auto& sequence : sequences) {
         unique(sequence.id, "sequence");
+        std::unordered_set<Id> sequenceClipIds;
         for (const auto& track : sequence.tracks) {
             unique(track.id, "track");
             MediaTime priorEnd{0, profile.frameRateNumerator, profile.frameRateDenominator};
             for (const auto& clip : track.clips) {
                 unique(clip.id, "clip");
+                sequenceClipIds.insert(clip.id);
                 if (!findAsset(clip.assetId)) throw std::runtime_error("clip references missing asset");
                 if (clip.duration.units <= 0) throw std::runtime_error("clip duration must be positive");
                 if (clip.timelineStart < priorEnd) throw std::runtime_error("overlapping or unsorted clips");
+                for (const auto& effect : clip.effects) unique(effect.id, "effect");
                 priorEnd = clip.timelineEnd();
             }
         }
+        for (const auto& transition : sequence.transitions) {
+            unique(transition.id, "transition");
+            if (!sequenceClipIds.contains(transition.fromClipId) ||
+                !sequenceClipIds.contains(transition.toClipId)) {
+                throw std::runtime_error("transition references a clip outside its sequence");
+            }
+        }
+        for (const auto& marker : sequence.markers) unique(marker.id, "marker");
     }
+    for (const auto& suggestion : cleanupSuggestions) unique(suggestion.id, "cleanup suggestion");
     if (activeSequenceId && !findSequence(*activeSequenceId)) {
         throw std::runtime_error("active sequence does not exist");
     }

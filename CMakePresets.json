@@ -9,9 +9,11 @@
       "binaryDir": "${sourceDir}/build/windows-mingw-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/windows",
         "CMAKE_CXX_COMPILER": "g++.exe",
-        "VE_BUILD_DESKTOP": "ON",
-        "VE_BUILD_TESTS": "ON"
+        "MOTUS_BUILD_DESKTOP": "ON",
+        "MOTUS_BUILD_TESTS": "ON",
+        "MOTUS_WARNINGS_AS_ERRORS": "ON"
       },
       "environment": {
         "PATH": "C:/msys64/mingw64/bin;$penv{PATH}"
@@ -24,8 +26,8 @@
       "binaryDir": "${sourceDir}/build/dev",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "VE_BUILD_DESKTOP": "ON",
-        "VE_BUILD_TESTS": "ON"
+        "MOTUS_BUILD_DESKTOP": "ON",
+        "MOTUS_BUILD_TESTS": "ON"
       }
     }
   ],
@@ -37,4 +39,3 @@
     { "name": "dev", "configurePreset": "dev", "output": { "outputOnFailure": true } }
   ]
 }
-

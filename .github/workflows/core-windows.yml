@@ -9,6 +9,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Portable bundle tests
+        run: node --test tests/bundle_runtime_tests.cjs
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -19,7 +24,7 @@ jobs:
             mingw-w64-x86_64-ninja
       - name: Configure core
         shell: msys2 {0}
-        run: cmake -S . -B build/ci -G Ninja -DVE_BUILD_DESKTOP=OFF -DVE_BUILD_TESTS=ON -DVE_WARNINGS_AS_ERRORS=ON
+        run: cmake -S . -B build/ci -G Ninja -DMOTUS_BUILD_DESKTOP=OFF -DMOTUS_BUILD_TESTS=ON -DMOTUS_WARNINGS_AS_ERRORS=ON
       - name: Build
         shell: msys2 {0}
         run: cmake --build build/ci

@@ -1,7 +1,10 @@
 /build/
+/dist/
+# A verified portable bundle copied in from another machine. Binaries this size
+# do not belong in Git history; see K-006 in the workspace known-issues file.
+/prebuilt/
 /.cache/
 *.ve-cache/
 *.autosave.veproj
 *.recovery.veproj
 compile_commands.json
-

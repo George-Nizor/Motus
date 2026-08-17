@@ -1,5 +1,7 @@
 #include "ve/mlt_graph.h"
 
+#include "ve/media_integrity.h"
+
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
@@ -22,13 +24,6 @@ std::string xmlEscape(std::string_view input) {
         }
     }
     return output;
-}
-
-std::filesystem::path originalPath(const Project& project, const Asset& asset) {
-    if (asset.relativePath && !project.projectPath.empty()) {
-        return (project.projectPath.parent_path() / *asset.relativePath).lexically_normal();
-    }
-    return asset.path;
 }
 
 std::int64_t framesAtProfile(const ProjectProfile& profile, const MediaTime& time,
@@ -57,7 +52,7 @@ MltGraph buildMltGraph(const Project& project, const Sequence& sequence,
     for (const auto& assetId : usedAssets) {
         const auto* asset = project.findAsset(assetId);
         if (!asset) throw std::runtime_error("MLT graph references missing asset");
-        auto resource = originalPath(project, *asset);
+        auto resource = resolveAssetPath(project, *asset);
         if (options.purpose == GraphPurpose::Preview) {
             const auto proxy = options.proxyPaths.find(assetId);
             if (proxy != options.proxyPaths.end()) resource = proxy->second;

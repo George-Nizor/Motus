@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "motus",
+  "displayName": "Motus",
+  "kind": "native",
+  "adapter": "native-bundle",
+  "versionSource": { "type": "cmake", "path": "CMakeLists.txt" },
+  "build": {
+    "output": "dist/windows",
+    "bundleManifest": "motus-bundle.json",
+    "prepare": "scripts/bootstrap-windows.ps1"
+  },
+  "launch": {
+    "type": "native",
+    "manifest": "motus-bundle.json",
+    "executable": "motus.exe",
+    "checkArgument": "--instrumenta-launch-check"
+  },
+  "mcp": {
+    "timeoutSeconds": 7200,
+    "windows": "dist/windows/motus-mcp.exe",
+    "posix": ["build/agent/motus-mcp", "build/dev/motus-mcp"],
+    "skill": "ai/skills/edit-video-with-motus"
+  },
+  "assets": {
+    "mark": "app/assets/motus-mark.svg"
+  }
+}

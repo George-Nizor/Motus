@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ve/media_probe.h"
 #include "ve/media_time.h"
 
 #include <cstdint>
@@ -47,6 +48,11 @@ struct Asset {
     bool hasVideo{true};
     bool hasAudio{true};
     bool proxyEligible{false};
+    // Probe output is canonical project metadata, not disposable cache state. Legacy projects
+    // load with no value and are re-probed before preview or export is enabled.
+    std::optional<MediaProbeResult> probe;
+    std::int64_t probedUtcMs{0};
+    std::string probeBackend;
 };
 
 struct Keyframe {
@@ -141,7 +147,7 @@ struct CleanupSuggestion {
 };
 
 struct Project {
-    static constexpr std::int32_t currentSchemaVersion = 2;
+    static constexpr std::int32_t currentSchemaVersion = 3;
 
     std::int32_t schemaVersion{currentSchemaVersion};
     Id id;
@@ -166,4 +172,3 @@ struct Project {
 };
 
 } // namespace ve
-

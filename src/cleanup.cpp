@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace ve {
@@ -16,11 +17,32 @@ const PacingPreset tight{"Tight", MediaTime::samples(19200, 48000),
 
 void renewSequenceIds(Sequence& sequence) {
     sequence.id = makeId();
+    std::unordered_map<Id, Id> clipIds;
+    std::unordered_map<Id, Id> linkedGroupIds;
     for (auto& track : sequence.tracks) {
         track.id = makeId();
-        for (auto& clip : track.clips) clip.id = makeId();
+        for (auto& clip : track.clips) {
+            const auto oldClipId = clip.id;
+            clip.id = makeId();
+            clipIds.emplace(oldClipId, clip.id);
+            if (!clip.linkedGroupId.empty()) {
+                const auto [entry, inserted] = linkedGroupIds.try_emplace(clip.linkedGroupId);
+                if (inserted) entry->second = makeId();
+                clip.linkedGroupId = entry->second;
+            }
+            for (auto& effect : clip.effects) effect.id = makeId();
+        }
     }
-    for (auto& transition : sequence.transitions) transition.id = makeId();
+    for (auto& transition : sequence.transitions) {
+        transition.id = makeId();
+        const auto from = clipIds.find(transition.fromClipId);
+        const auto to = clipIds.find(transition.toClipId);
+        if (from == clipIds.end() || to == clipIds.end()) {
+            throw std::runtime_error("transition references a clip outside its sequence");
+        }
+        transition.fromClipId = from->second;
+        transition.toClipId = to->second;
+    }
     for (auto& marker : sequence.markers) marker.id = makeId();
 }
 

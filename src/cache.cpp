@@ -38,11 +38,13 @@ bool reconcileAsset(Project& project, const Id& assetId, const AssetFingerprint&
     if (!exists) {
         asset->status = AssetStatus::Missing;
     } else if (asset->fingerprint == observed) {
-        asset->status = AssetStatus::Online;
+        // Integrity refresh does not claim that an independently established codec/runtime
+        // incompatibility has disappeared merely because the bytes are unchanged.
+        if (asset->status != AssetStatus::Unsupported) asset->status = AssetStatus::Online;
     } else {
         asset->status = AssetStatus::Modified;
         for (auto& suggestion : project.cleanupSuggestions) {
-            if (suggestion.assetId == assetId && suggestion.state != SuggestionState::Rejected) {
+            if (suggestion.assetId == assetId && suggestion.state != SuggestionState::Stale) {
                 suggestion.state = SuggestionState::Stale;
             }
         }
