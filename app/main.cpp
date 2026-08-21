@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationDomain(QStringLiteral("instrumenta.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Motus"));
     QQuickStyle::setStyle(QStringLiteral("Fusion"));
-    application.setWindowIcon(QIcon(QStringLiteral(":/qt/qml/Motus/app/assets/motus-mark.svg")));
+    application.setWindowIcon(QIcon(QStringLiteral(":/qt/qml/Motus/app/assets/motus-mark.png")));
 
     ProjectController projectController;
     QQmlApplicationEngine engine;

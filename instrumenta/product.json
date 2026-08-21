@@ -23,6 +23,6 @@
     "skill": "ai/skills/edit-video-with-motus"
   },
   "assets": {
-    "mark": "app/assets/motus-mark.svg"
+    "mark": "app/assets/motus-mark.png"
   }
 }

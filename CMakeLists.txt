@@ -77,7 +77,7 @@ if(MOTUS_BUILD_DESKTOP)
             URI Motus
             VERSION 1.0
             QML_FILES app/qml/Main.qml
-            RESOURCES app/assets/motus-mark.svg ${MOTUS_QML_ICON_ASSETS}
+            RESOURCES app/assets/motus-mark.png ${MOTUS_QML_ICON_ASSETS}
         )
         target_link_libraries(motus PRIVATE
             Motus::Core Qt6::Core Qt6::Gui Qt6::Multimedia Qt6::Quick Qt6::QuickControls2 Qt6::Svg

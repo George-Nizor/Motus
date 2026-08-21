@@ -197,7 +197,7 @@ ApplicationWindow {
                 anchors.rightMargin: 10
                 spacing: 4
                 Image {
-                    source: "qrc:/qt/qml/Motus/app/assets/motus-mark.svg"
+                    source: "qrc:/qt/qml/Motus/app/assets/motus-mark.png"
                     Layout.preferredWidth: 28
                     Layout.preferredHeight: 28
                     Layout.rightMargin: 4
